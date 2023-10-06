@@ -68,8 +68,8 @@ def spider(args) -> None:
         os.mkdir(args.path)
     src_urls = get_src_urls(args=args, level=level)
     total_images = len(src_urls)
-    time.sleep(0.5)
     print('\n')
+    time.sleep(0.5)
     f_id = 0
     for src_url in src_urls:
         filename = get_file_name(path=src_url, f_id=f_id)
