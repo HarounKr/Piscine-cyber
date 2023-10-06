@@ -4,11 +4,14 @@ import os;
 import requests
 import sys
 import html
+import time
+import re
 
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
 }
-
+pattern = r'^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)$'
+            
 def args_parser() ->  argparse.Namespace:
     parser = argparse.ArgumentParser(description="The spider program allow you to extract all the images from a website, recursively, by providing a url as a parameter")
     parser.add_argument("URL", help='url to be scraped', type=str)
@@ -26,26 +29,68 @@ def print_params(args) -> None:
         print("Negative numbers are not valid.")
         sys.exit(0)
 
-def spider(args):
-    url = args.URL
+def get_file_name(path, f_id) -> str:
+    path_parse = requests.utils.urlparse(path).path
+    split_parsed_path = path_parse.split('/')
+    listlen = len(split_parsed_path)
+    return str(f_id) + '-' + split_parsed_path[listlen - 1]
+
+def get_total_image(args, level):
+    nb_images = 0
+
+    for i in range(1, level + 1):
+        sys.stdout.write(f'\rProcessing page {i}/{level}')
+        sys.stdout.flush()
+        url = str(args.URL) + f"?page={i}"
+        response = requests.get(url=url, headers=headers, stream=True)
+        soup = BeautifulSoup(response.text, 'html.parser')
+        images = soup.findAll('img')
+        for image in images:
+            if 'src' in image.attrs:
+                src = html.unescape(image['src'])
+                if re.match(pattern, src):
+                    nb_images += 1
+    return nb_images
+
+def progress_bar(downloaded, level, total):
+    bar_length = 50
+    progress = (downloaded / total)
+    barre = '=' * int(round(progress * bar_length)-1)
+    spaces = ' ' * (bar_length - len(barre))
+    
+    sys.stdout.write('\rDownloaded level {}: [{}] {:.2f}%'.format(level, barre + spaces, progress * 100))
+    sys.stdout.flush()
+
+def spider(args) -> None:
+    level = args.level
+    downloaded = 0
+
     if not os.path.exists(args.path):
         os.mkdir(args.path)
-    response = requests.get(url=url, headers=headers)
-    url_parse = requests.utils.urlparse(url=url)
-    new_url = url_parse.scheme + '://' + url_parse.netloc
-    if response.ok:
-        soup = BeautifulSoup(response.text, 'html.parser')
-        span = soup.find(class_= 'JO4Dw2C5EjCB3iovKUcw')
-        pages = int(span.text)
-        if args.level > pages:
-            print("The number of levels exceeds the number of pages.")
-            sys.exit(0)
-        sources = soup.findAll('source')
-        for source in sources:
-            print(html.unescape(source['srcset']), '\n\n')
+    total_images = get_total_image(args=args, level=level)
+    time.sleep(0.5)
+    for i in range(1, level + 1):
+        url = str(args.URL) + f"?page={i}"
+        response = requests.get(url=url, headers=headers, stream=True)
+        if response.ok:
+            f_id = 0
+            soup = BeautifulSoup(response.text, 'html.parser')
+            images = soup.findAll('img')
+            for image in images:
+                 if 'src' in image.attrs:
+                    src = html.unescape(image['src'])
+                    if re.match(pattern, src):
+                        filename = get_file_name(path=src, f_id=f_id)
+                        data = requests.get(src).content
+                        f = open(args.path + filename, 'wb')
+                        f.write(data)
+                        f.close()
+                        f_id += 1
+                        downloaded += 1
+                        progress_bar(downloaded=downloaded, level=i, total=total_images)
+                        time.sleep(0.1)
 
 def main():
-
     args = args_parser()
     if args.recursive:
         print_params(args=args)
