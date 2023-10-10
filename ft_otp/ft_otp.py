@@ -49,10 +49,11 @@ def is_hex(s):
     try:
         int(s, 16)
         return True
-    except ValueError:
+    except Exception:
         return False
     
 def handle_errors(hexkey) -> int:
+     # Gestion des erreurs
     if is_hex(hexkey) == False:
         print("error: key must be hexadecimal.")
         return False
@@ -70,17 +71,17 @@ def main():
             hexkey = generate_random_hexa()
             print("Hex key generated: ", hexkey)
         elif (args.encryptionkey):
+            # Generer une clé de chiffrement
             key = Fernet.generate_key()
             print("Encryption key: ", key.decode())
-        elif (args.hexkey):
-            # Gestion des erreurs
+        elif (args.hexkey): # -g
             if handle_errors(args.hexkey):
                 key = input("Please enter an encryption key: ")
                 with open("ft_otp.key", 'wb') as hexfile:
                     hexfile.write(args.hexkey.encode())
                     hexfile.close()
                 encrypt_data(encryptionkey=key)
-        elif (args.passfile):
+        elif (args.passfile): # -k
             key = input("Please enter an decryption key: ")
             hexkey = decrypt_data(decryptionkey=key, filename=args.passfile)
             print(hexkey)
