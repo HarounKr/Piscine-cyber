@@ -1,10 +1,14 @@
 import secrets
 import argparse
 import random
-import sys
+import time
+import datetime
+import base64
+import pyotp
 from cryptography.fernet import Fernet
-import string
-import re
+from hotp import hotp
+from encryption import encrypt_data, decrypt_data
+
 
 def args_parser() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
@@ -20,30 +24,6 @@ def generate_random_hexa() -> str:
     nbytes = random.randint(32, 82)
     hexkey = secrets.token_hex(nbytes=nbytes)
     return hexkey
-
-def encrypt_data(encryptionkey: str) -> None:
-    key = str.encode(encryptionkey)
-    fernet = Fernet(key)
-    # Ouvrir et lire le fichier a chiffrer
-    with open('ft_otp.key', 'rb') as file:
-        hexfile = file.read()
-    # Chiffrer le contenu du fichier 
-    encrypted_data = fernet.encrypt(hexfile)
-    # revouvrir le fichier a chiffrer et ecrire le contenu chiffrer a l'interieur
-    with open('ft_otp.key', 'wb') as encrypted_file:
-        encrypted_file.write(encrypted_data)
-
-def decrypt_data(decryptionkey: str, filename: str) -> bytes:
-    key = str.encode(decryptionkey)
-
-    # Utiliser la cle de chiffrement
-    fernet = Fernet(key)
-    # Ouvrir le fichier chiffrer
-    with open(filename, 'rb') as enc_file:
-        encyrpted = enc_file.read()
-    # Dechiffrer le fichier
-    decrypted = fernet.decrypt(encyrpted)
-    return decrypted
 
 def is_hex(s):
     try:
@@ -62,15 +42,24 @@ def handle_errors(hexkey) -> int:
         return False
     return True
 
+# TOTP = HOTP(K, C)
+# Mot de passe à usage unique basé sur le temps
+def totp(k, t):
+    s_since_epock = time.mktime(datetime.datetime.now().timetuple())
+    time_steps = int(s_since_epock / t)
+    totp = hotp(k=k, c=time_steps)
+    return totp
+
+
 def main():
     args = args_parser()
 
     try:
-        if (args.hexadecimal):
+        if (args.hexadecimal): # -hex
             # Generer une clé en hexa
             hexkey = generate_random_hexa()
-            print("Hex key generated: ", hexkey)
-        elif (args.encryptionkey):
+            print("hexkey")
+        elif (args.encryptionkey): # -ek
             # Generer une clé de chiffrement
             key = Fernet.generate_key()
             print("Encryption key: ", key.decode())
@@ -84,7 +73,12 @@ def main():
         elif (args.passfile): # -k
             key = input("Please enter an decryption key: ")
             hexkey = decrypt_data(decryptionkey=key, filename=args.passfile)
-            print(hexkey)
+            t = 30 # secondes
+            totp_val = totp(k=hexkey, t=t)
+            secret = base64.b32encode(hexkey)
+            real_totp = pyotp.TOTP(base64.b32encode(secret))
+            print("my otp   :", totp_val)
+            print("real otp :", real_totp.now())
     except Exception as e:
         print(e)
     
