@@ -6,7 +6,7 @@ services:
     image: nginx:latest
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/index.html:/usr/share/nginx/html/index.html:ro # Montez le dossier html comme volume
+      - ./nginx/index.html:/usr/share/nginx/html/index.html:ro
     depends_on:
       - hidden-service
     ports:

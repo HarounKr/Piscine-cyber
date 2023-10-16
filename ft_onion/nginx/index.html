@@ -4,51 +4,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zone Sécurisée</title>
+    <title>Effet Matrix Binaire</title>
     <style>
-        /* Styles généraux */
         body {
-            font-family: 'Courier New', monospace;
-            margin: 0;
-            padding: 0;
-            background-color: #0a0a0a;
-            color: #33ff33;
+            font-family: 'Courier New', Courier, monospace;
+            background-color: black;
+            color: lime;
+            overflow: hidden;
+            font-size: 18px;
         }
 
-        .container {
-            max-width: 800px;
-            margin: 40px auto;
-            padding: 20px;
-            border: 2px dashed #33ff33;
+        canvas {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
         }
-
-        /* Styles d'en-tête */
-        header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-
-        header h1 {
-            animation: blinker 1.5s linear infinite;
-        }
-
-        /* Animation de clignotement */
-        @keyframes blinker {
-            50% {
-                opacity: 0;
-            }
-        }
-
     </style>
 </head>
 
 <body>
-    <div class="container">
-        <header>
-            <h1>ACCÈS SÉCURISÉ</h1>
-        </header>
-    </div>
+    <canvas id="matrixCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById("matrixCanvas");
+        const ctx = canvas.getContext("2d");
+        
+        const characters = "ابتثجحخدذرزسشصضطظعغفقكلمنهوي٠١٢٣٤٥٦٧٨٩";
+
+        let drops;
+
+        function setCanvasSize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const columns = canvas.width / 15; 
+            drops = [];
+            for (let i = 0; i < columns; i++) {
+                drops[i] = 1;
+            }
+        }
+
+        function drawMatrix() {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = "#0F0"; 
+            ctx.font = "18px Courier New";
+
+            for (let i = 0; i < drops.length; i++) {
+                const text = characters.charAt(Math.floor(Math.random() * characters.length));
+                ctx.fillText(text, i * 15, drops[i] * 15);
+
+                if (drops[i] * 15 > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+
+        setInterval(drawMatrix, 33); 
+
+        window.addEventListener('resize', setCanvasSize);
+        setCanvasSize(); // Initial setup
+    </script>
 </body>
 
 </html>
-
