@@ -1,0 +1,19 @@
+version: '3.7'
+
+services:
+  nginx:
+    container_name: nginx
+    image: nginx:latest
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/index.html:/usr/share/nginx/html/index.html:ro # Montez le dossier html comme volume
+    depends_on:
+      - hidden-service
+    ports:
+      - "8080:80"
+
+  hidden-service:
+    container_name: hidden_service
+    image: dperson/torproxy
+    volumes:
+      - ./tor/torrc:/etc/tor/torrc:ro
