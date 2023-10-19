@@ -8,14 +8,14 @@ Ransomware is a type of malicious software (malware) that encrypts the victim's 
 
 ## Directory Structure:
 
-├── create_files.py - Generates template files for testing the program.
-├── generate_key.py - Produces an encryption key and stores it in key.key.
-├── stockholm.py - Main executable of the program.
-│ ├── (no options) - Encrypts files in the directory, appending a .ft extension.
-│ ├── -v - Displays the version of the program.
-│ ├── -s - Silent mode: No output displayed.
-│ └── -r '<file.key>' - Decrypts files using the provided key.
-└── Makefile - Installs necessary dependencies.
+├── create_files.py - Generates template files for testing the program.  
+├── generate_key.py - Produces an encryption key and stores it in key.key.  
+├── stockholm.py - Main executable of the program.  
+│ ├── (no options) - Encrypts files in the directory, appending a .ft extension.  
+│ ├── -v - Displays the version of the program.  
+│ ├── -s - Silent mode: No output displayed.  
+│ └── -r '<file.key>' - Decrypts files using the provided key.  
+└── Makefile - Installs necessary dependencies.  
 
 ## Usage:
 
