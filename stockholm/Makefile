@@ -16,10 +16,10 @@ install_python:
 install_packages:
 	@echo "Installation de la librairie de cryptographie..."
 	pip3 install cryptography
-	pip3 install csnake
 	pip3 install numpy
 
 run_scripts:
 	@echo "Exécution des scripts Python..."
 	python3 create_files.py
+	python3 key.key
 	python3 stockholm.py
