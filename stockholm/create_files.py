@@ -2,8 +2,6 @@ import xml.etree.ElementTree as gfg
 import sys
 import csv
 from faker import Faker
-from csnake import CodeWriter, Variable, FormattedLiteral
-import numpy as np
 import requests
 
 def GenerateXML(fileName) : 
